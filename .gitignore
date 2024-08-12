@@ -1,0 +1,16 @@
+# Project exclude paths
+/.gradle/
+/.idea/
+/build/
+
+#testserver
+/testserver/*
+!/testserver/paper-1.21-109.jar
+!/testserver/eula.txt
+!/testserver/start.bat
+
+!/testserver/plugins/
+/testserver/plugins/**/
+
+# Project exlude data types
+*.env
