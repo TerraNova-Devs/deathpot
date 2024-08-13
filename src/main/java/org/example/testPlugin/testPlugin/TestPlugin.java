@@ -20,6 +20,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 
 public final class TestPlugin extends JavaPlugin implements Listener {
@@ -61,10 +62,14 @@ public final class TestPlugin extends JavaPlugin implements Listener {
         Block blockpot = player.getWorld().getBlockAt(player.getLocation().add(0, 0.5,0));
         blockpot.setType(Material.DECORATED_POT);
 
-        if (blockpot instanceof DecoratedPot p){
-        //    p.getPersistentDataContainer().set(new NamespacedKey(this,"DeathPot"), DataType.asArray(player.getInventory().getContents(),DataType.ITEM_STACK_ARRAY));
-        }
+        NamespacedKey key = new NamespacedKey(this, "deathPot");
 
+        if (blockpot instanceof DecoratedPot p){
+            p.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, player.getInventory().getContents());
+            if(!p.getPersistentDataContainer().has(key)) return;
+            Inventory inv = Bukkit.createInventory(null, 45);
+            inv.setContents(Objects.requireNonNull(p.getPersistentDataContainer().get(key, DataType.ITEM_STACK_ARRAY)));
+        }
         for (ItemStack itemStack2 : player.getInventory().getContents()){
             if(itemStack2 == null){
                 player.sendMessage("null");
