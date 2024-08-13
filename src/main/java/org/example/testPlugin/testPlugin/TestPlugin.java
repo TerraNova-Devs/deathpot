@@ -39,6 +39,20 @@ public final class TestPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
 
+    public void onInteract(PlayerInteractEvent event2) {
+
+        ItemStack itemHand = event2.getItem();
+        Player player2 = event2.getPlayer();
+        Action action = event2.getAction();
+        if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)
+            player2.sendMessage("WORKING");
+            if (itemHand != null && itemHand.getType() == Material.SNOWBALL){
+                player2.sendMessage("working");
+            }
+    }
+
+    @EventHandler
+
     public void onPlayerEggThrow(PlayerEggThrowEvent e) {
 
         e.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize("<blue> YEET"));
