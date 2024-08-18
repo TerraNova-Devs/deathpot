@@ -32,36 +32,34 @@ public class DeathPotListener implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event){
-        Player player = event.getEntity();
-        //DataType.ITEM_STACK_ARRAY
-        Block blockpot = player.getWorld().getBlockAt(player.getLocation().add(0, 0.5,0));
-        blockpot.setType(Material.DECORATED_POT);
+        Player p = event.getEntity();
+        Block bp = p.getWorld().getBlockAt(p.getLocation().add(0, 0.5,0));
+        bp.setType(Material.DECORATED_POT);
 
         NamespacedKey key = new NamespacedKey(plugin, "deathPot");
 
-        if (blockpot instanceof DecoratedPot p){
-            p.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, player.getInventory().getContents());
-            if(!p.getPersistentDataContainer().has(key)) return;
+        if (bp instanceof DecoratedPot pot){
+            pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, pot.getInventory().getContents());
+            if(!pot.getPersistentDataContainer().has(key)) return;
             Inventory inv = Bukkit.createInventory(null, 45);
-            inv.setContents(Objects.requireNonNull(p.getPersistentDataContainer().get(key, DataType.ITEM_STACK_ARRAY)));
+            inv.setContents(Objects.requireNonNull(pot.getPersistentDataContainer().get(key, DataType.ITEM_STACK_ARRAY)));
         }
-        for (ItemStack itemStack2 : player.getInventory().getContents()){
+        for (ItemStack itemStack2 : p.getInventory().getContents()){
             if(itemStack2 == null){
-                player.sendMessage("null");
                 continue;
             }
-            player.sendMessage(itemStack2.displayName());
+            p.sendMessage(itemStack2.displayName());
         }
 
         Inventory inv = Bukkit.createInventory(null, 45, "DeathPot");
-        inv.setContents(player.getInventory().getContents());
+        inv.setContents(p.getInventory().getContents());
 
-        deathPot.put(blockpot, inv);
+        deathPot.put(bp, inv);
 
 
 
         event.getDrops().clear();
-        player.sendMessage("worked");
+        p.sendMessage("worked");
     }
 
     @EventHandler
