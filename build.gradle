@@ -6,6 +6,12 @@ plugins {
 group = 'org.example.testPlugin'
 version = '1.0-SNAPSHOT'
 
+def envProperties = new Properties()
+def envPropertiesFile = file('private.env')
+envPropertiesFile.withReader('UTF-8') { reader ->
+    envProperties.load(reader)
+}
+
 repositories {
     mavenCentral()
     maven {
@@ -16,12 +22,21 @@ repositories {
         name = "sonatype"
         url = "https://oss.sonatype.org/content/groups/public/"
     }
+    maven {
+        name = "github"
+        url = "https://maven.pkg.github.com/TerraNova-Devs/TerranovaLib"
+        credentials {
+            username = project.findProperty(envProperties.getProperty('githubUser'))
+            password = project.findProperty(envProperties.getProperty('githubToken'))
+        }
+    }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
     implementation 'com.jeff-media:custom-block-data:2.2.2'
     implementation 'com.jeff-media:MorePersistentDataTypes:2.4.0'
+    compileOnly 'de.mcterranova:terranova-lib:0.5.0'
 }
 shadowJar{
     destinationDirectory.set(file("./testserver/plugins"))

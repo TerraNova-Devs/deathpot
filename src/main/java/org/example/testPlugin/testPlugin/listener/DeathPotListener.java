@@ -14,6 +14,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.example.testPlugin.testPlugin.TestPlugin;
 
@@ -33,12 +34,12 @@ public class DeathPotListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent event){
         Player p = event.getEntity();
-        Block bp = p.getWorld().getBlockAt(p.getLocation().add(0, 0.5,0));
-        bp.setType(Material.DECORATED_POT);
+        Block deathblock = p.getWorld().getBlockAt(p.getLocation().add(0, 0.5,0));
+        deathblock.setType(Material.DECORATED_POT);
 
         NamespacedKey key = new NamespacedKey(plugin, "deathPot");
 
-        if (bp instanceof DecoratedPot pot){
+        if (deathblock instanceof DecoratedPot pot){
             pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, pot.getInventory().getContents());
             if(!pot.getPersistentDataContainer().has(key)) return;
             Inventory inv = Bukkit.createInventory(null, 45);
@@ -54,9 +55,7 @@ public class DeathPotListener implements Listener {
         Inventory inv = Bukkit.createInventory(null, 45, "DeathPot");
         inv.setContents(p.getInventory().getContents());
 
-        deathPot.put(bp, inv);
-
-
+        deathPot.put(deathblock, inv);
 
         event.getDrops().clear();
         p.sendMessage("worked");
@@ -65,21 +64,20 @@ public class DeathPotListener implements Listener {
     @EventHandler
     public void onOpen(PlayerInteractEvent event){
         Player p = event.getPlayer();
+        Inventory inv;
         p.sendMessage("test");
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
             if (event.getClickedBlock().getType() == Material.DECORATED_POT){
                 Block block = event.getClickedBlock();
 
-                for(Block blocks : deathPot.keySet()){
-                    if (blocks.getLocation().equals(block.getLocation())){
-                        event.setCancelled(true);
+                for(Block blocks : deathPot.keySet()) {
+                    if (blocks.getLocation().equals(block.getLocation())) {
+                        event.setCancelled(false);
                         event.getPlayer().dropItem(true);
+
                     }
                 }
             }
         }
-
     }
-
-
 }
