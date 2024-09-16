@@ -1,6 +1,7 @@
-package org.example.testPlugin.testPlugin.listener;
+package de.mcterranova.deathpot.listener;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
+import de.mcterranova.deathpot.DeathPot;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -14,18 +15,15 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
-import org.example.testPlugin.testPlugin.TestPlugin;
 
 import java.util.HashMap;
 import java.util.Objects;
 
 public class DeathPotListener implements Listener {
 
-    TestPlugin plugin;
+    DeathPot plugin;
 
-    public DeathPotListener(TestPlugin plugin) {
+    public DeathPotListener(DeathPot plugin) {
         this.plugin = plugin;
     }
 

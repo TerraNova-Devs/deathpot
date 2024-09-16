@@ -1,4 +1,4 @@
-package org.example.testPlugin.testPlugin;
+package de.mcterranova.deathpot;
 
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;

@@ -1,6 +1,6 @@
 name: TestPlugin
 version: '1.0-SNAPSHOT'
-main: org.example.testPlugin.testPlugin.TestPlugin
+main: de.mcterranova.deathpot.DeathPot
 api-version: '1.21'
 commands:
   heal:

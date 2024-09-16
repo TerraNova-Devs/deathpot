@@ -1,4 +1,4 @@
-package org.example.testPlugin.testPlugin;
+package de.mcterranova.deathpot;
 
 import org.bukkit.Particle;
 import org.bukkit.command.Command;

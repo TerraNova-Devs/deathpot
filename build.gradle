@@ -3,7 +3,7 @@ plugins {
     id 'io.github.goooler.shadow' version "8.1.8"
 }
 
-group = 'org.example.testPlugin'
+group = 'de.mcterranova.deathpot'
 version = '1.0-SNAPSHOT'
 
 def envProperties = new Properties()
