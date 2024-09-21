@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -30,53 +31,30 @@ public class DeathPotListener implements Listener {
         key = new NamespacedKey(plugin, "deathPot");
     }
 
-    public static HashMap<Block, Inventory> deathPot = new HashMap<>();
-
     @EventHandler
-    public void onDeath(PlayerDeathEvent event){
+    public void onDeath(PlayerDeathEvent event) {
         Player p = event.getEntity();
-        Block deathblock = p.getWorld().getBlockAt(p.getLocation().add(0, 0.5,0));
+        Block deathblock = p.getWorld().getBlockAt(p.getLocation().add(0, 0.5, 0));
         deathblock.setType(Material.DECORATED_POT);
 
-        if (deathblock instanceof DecoratedPot pot){
-            pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, pot.getInventory().getContents());
-            if(!pot.getPersistentDataContainer().has(key)) return;
-            Inventory inv = Bukkit.createInventory(null, 45);
-            inv.setContents(Objects.requireNonNull(pot.getPersistentDataContainer().get(key, DataType.ITEM_STACK_ARRAY)));
+        if (deathblock instanceof DecoratedPot pot) {
+            pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
         }
-        for (ItemStack itemStack2 : p.getInventory().getContents()){
-            if(itemStack2 == null){
-                continue;
-            }
-            p.sendMessage(itemStack2.displayName());
-        }
-
-        Inventory inv = Bukkit.createInventory(null, 45, "DeathPot");
-        inv.setContents(p.getInventory().getContents());
-
-        deathPot.put(deathblock, inv);
 
         event.getDrops().clear();
-        p.sendMessage("worked");
     }
 
     @EventHandler
-    public void onOpen(PlayerInteractEvent event){
+    public void onOpen(PlayerInteractEvent event) {
         Player p = event.getPlayer();
-        Inventory inv;
-        p.sendMessage("test");
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            if (event.getClickedBlock().getType() == Material.DECORATED_POT){
-                Block block = event.getClickedBlock();
 
-                for(Block blocks : deathPot.keySet()) {
-                    if (blocks.getLocation().equals(block.getLocation())) {
-                        event.setCancelled(false);
-                        event.getPlayer().dropItem(true);
-
-                    }
-                }
-            }
-        }
+        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
+        if (!(event.getClickedBlock() instanceof DecoratedPot pot)) return;
+        if (!pot.getPersistentDataContainer().has(key)) return;
+        ItemStack[] deathDrop = pot.getPersistentDataContainer().get(key, DataType.ITEM_STACK_ARRAY);
+        if (deathDrop == null) return;
+        Arrays.stream(deathDrop)
+                .filter(Objects::nonNull)
+                .forEach(itemStack -> p.getWorld().dropItem(p.getLocation(), itemStack));
     }
 }
