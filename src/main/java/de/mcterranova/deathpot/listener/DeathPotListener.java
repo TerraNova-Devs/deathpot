@@ -38,7 +38,7 @@ public class DeathPotListener implements Listener {
         deathblock.setType(Material.DECORATED_POT);
 
         if (deathblock instanceof DecoratedPot pot) {
-            pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
+            pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, event.getDrops().toArray(new ItemStack[0]));
         }
 
         event.getDrops().clear();
