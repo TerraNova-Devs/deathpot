@@ -23,8 +23,11 @@ public class DeathPotListener implements Listener {
 
     DeathPot plugin;
 
+    NamespacedKey key;
+
     public DeathPotListener(DeathPot plugin) {
         this.plugin = plugin;
+        key = new NamespacedKey(plugin, "deathPot");
     }
 
     public static HashMap<Block, Inventory> deathPot = new HashMap<>();
@@ -34,8 +37,6 @@ public class DeathPotListener implements Listener {
         Player p = event.getEntity();
         Block deathblock = p.getWorld().getBlockAt(p.getLocation().add(0, 0.5,0));
         deathblock.setType(Material.DECORATED_POT);
-
-        NamespacedKey key = new NamespacedKey(plugin, "deathPot");
 
         if (deathblock instanceof DecoratedPot pot){
             pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, pot.getInventory().getContents());
