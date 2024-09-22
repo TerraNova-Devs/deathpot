@@ -52,7 +52,8 @@ public class DeathPotListener implements Listener {
         ItemStack item = new RoseItem.Builder()
                 .material(Material.COMPASS)
                 .displayName(Chat.cottonCandy(p.getName()))
-                .addLore(prettyLocation(block.getLocation())).build().stack;
+                .addLore(prettyLocation(block.getLocation()),
+                        "<red>Todesart: <gray>" + event.getEntity().getLastDamageCause()).build().stack;
         item.getItemMeta();
         CompassMeta meta = (CompassMeta) item.getItemMeta();
         meta.setLodestoneTracked(false);
