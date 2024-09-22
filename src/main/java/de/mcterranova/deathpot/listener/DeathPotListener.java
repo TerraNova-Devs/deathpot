@@ -52,7 +52,7 @@ public class DeathPotListener implements Listener {
                 .filter(Objects::nonNull)
                 .forEach(itemStack -> p.getWorld().dropItem(p.getLocation(), itemStack));
         pot.getPersistentDataContainer().remove(key);
-        pot.setType(Material.AIR);
         pot.update();
+        pot.getBlock().setType(Material.AIR);
     }
 }
