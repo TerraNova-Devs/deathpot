@@ -32,31 +32,27 @@ public class DeathPotListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         Player p = event.getEntity();
-        Block block = p.getLocation().add(0,1,0).getBlock();
+        Block block = p.getLocation().add(0,0.5,0).getBlock();
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
         pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, event.getDrops().toArray(new ItemStack[0]));
         pot.update();
         event.getDrops().clear();
-        p.sendMessage(String.valueOf(pot.getPersistentDataContainer().has(key)));
     }
 
     @EventHandler
     public void onOpen(PlayerInteractEvent event) {
         Player p = event.getPlayer();
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
-        p.sendMessage(event.getClickedBlock().getState().getType().toString());
-        if (!(event.getClickedBlock().getState() instanceof DecoratedPot pot)) return;
+        if (!(Objects.requireNonNull(event.getClickedBlock()).getState() instanceof DecoratedPot pot)) return;
         if (!pot.getPersistentDataContainer().has(key)) return;
-        p.sendMessage(Chat.errorFade("4"));
         ItemStack[] deathDrop = pot.getPersistentDataContainer().get(key, DataType.ITEM_STACK_ARRAY);
         if (deathDrop == null) return;
-        p.sendMessage(Chat.errorFade("5"));
         Arrays.stream(deathDrop)
                 .filter(Objects::nonNull)
-                .forEach(itemStack -> {
-                    p.sendMessage(Chat.errorFade("6"));
-                    p.getWorld().dropItem(p.getLocation(), itemStack);
-                });
+                .forEach(itemStack -> p.getWorld().dropItem(p.getLocation(), itemStack));
+        pot.getPersistentDataContainer().remove(key);
+        pot.setType(Material.AIR);
+        pot.update();
     }
 }

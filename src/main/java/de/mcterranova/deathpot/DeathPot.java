@@ -13,7 +13,7 @@ public final class DeathPot extends JavaPlugin {
     @Override
     public void onEnable (){
         CustomBlockData.registerListener(this);
-        Objects.requireNonNull(getCommand("test")).setExecutor(new TestCommand(this));
+        Objects.requireNonNull(getCommand("test")).setExecutor(new TestCommand());
         Bukkit.getPluginManager().registerEvents(new DeathPotListener(this), this);
     }
 
