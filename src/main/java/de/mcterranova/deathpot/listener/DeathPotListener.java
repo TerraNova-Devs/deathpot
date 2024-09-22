@@ -4,6 +4,7 @@ import com.jeff_media.morepersistentdatatypes.DataType;
 import de.mcterranova.deathpot.DeathPot;
 import de.mcterranova.terranovaLib.roseGUI.RoseItem;
 import de.mcterranova.terranovaLib.utils.Chat;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -78,7 +79,7 @@ public class DeathPotListener implements Listener {
         pot.getPersistentDataContainer().remove(key);
         pot.update();
         pot.getBlock().setType(Material.AIR);
-        p.sendMessage(prettyLocation(event.getClickedBlock().getLocation()));
+        p.sendMessage(MiniMessage.miniMessage().stripTags(prettyLocation(event.getClickedBlock().getLocation())));
         chargeStrict(p,"COMPASS",1,event.getClickedBlock().getLocation());
     }
 
@@ -94,15 +95,16 @@ public class DeathPotListener implements Listener {
     }
     private Integer chargeStrict(Player p, String itemString, int amount, Location loc) {
 
-        ItemStack item;
-        item = new ItemStack(Material.valueOf(itemString));
+        ItemStack item = new ItemStack(Material.valueOf(itemString));
 
         ItemStack[] stacks = p.getInventory().getContents();
 
         int total = amount;
         for (int i = 0; i < stacks.length; i++) {
-            if (stacks[i] == null || !stacks[i].isSimilar(item)) continue;
-            if (!MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst()).equals(prettyLocation(loc))) continue;
+            //if (stacks[i] == null || !stacks[i].isSimilar(item)) continue;
+            p.sendMessage(MiniMessage.miniMessage().stripTags(MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst())));
+            if (!MiniMessage.miniMessage().stripTags(MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst())).equals(MiniMessage.miniMessage().stripTags(prettyLocation(loc)))) continue;
+
             int stackAmount = stacks[i].getAmount();
             if (stackAmount < total) {
                 stacks[i] = null;
