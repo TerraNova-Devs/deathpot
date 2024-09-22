@@ -2,12 +2,17 @@ package de.mcterranova.deathpot.listener;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
 import de.mcterranova.deathpot.DeathPot;
+import de.mcterranova.terranovaLib.roseGUI.RoseItem;
 import de.mcterranova.terranovaLib.utils.Chat;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.DecoratedPot;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,8 +20,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 
 import java.util.Arrays;
@@ -37,9 +44,24 @@ public class DeathPotListener implements Listener {
         Block block = p.getLocation().add(0,0.5,0).getBlock();
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
-        pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, event.getDrops().toArray(new ItemStack[0]));
+        pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
         pot.update();
-        event.getDrops().clear();
+        p.getInventory().clear();
+        event.getPlayer();
+        ItemStack item = new RoseItem.Builder()
+                .material(Material.COMPASS)
+                .displayName(Chat.cottonCandy(p.getName()))
+                .addLore(prettyLocation(block.getLocation())).build().stack;
+        item.getItemMeta();
+        CompassMeta meta = (CompassMeta) item.getItemMeta();
+        meta.setLodestoneTracked(false);
+        meta.setLodestone(p.getLocation());
+        item.setItemMeta(meta);
+        p.getInventory().addItem(item);
+    }
+
+    private String prettyLocation(Location loc) {
+        return "<red>Koordinaten: <gray>" + (int) loc.x() + ", " + (int) loc.y() + ", " + (int) loc.z();
     }
 
     @EventHandler
@@ -56,6 +78,8 @@ public class DeathPotListener implements Listener {
         pot.getPersistentDataContainer().remove(key);
         pot.update();
         pot.getBlock().setType(Material.AIR);
+        p.sendMessage(prettyLocation(event.getClickedBlock().getLocation()));
+        chargeStrict(p,"COMPASS",1,event.getClickedBlock().getLocation());
     }
 
     @EventHandler
@@ -67,5 +91,31 @@ public class DeathPotListener implements Listener {
         if (pot.getPersistentDataContainer().has(key)){
             event.setCancelled(true);
         };
+    }
+    private Integer chargeStrict(Player p, String itemString, int amount, Location loc) {
+
+        ItemStack item;
+        item = new ItemStack(Material.valueOf(itemString));
+
+        ItemStack[] stacks = p.getInventory().getContents();
+
+        int total = amount;
+        for (int i = 0; i < stacks.length; i++) {
+            if (stacks[i] == null || !stacks[i].isSimilar(item)) continue;
+            if (!MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst()).equals(prettyLocation(loc))) continue;
+            int stackAmount = stacks[i].getAmount();
+            if (stackAmount < total) {
+                stacks[i] = null;
+                total -= stackAmount;
+            } else {
+                stacks[i].setAmount(stackAmount - total);
+                total -= total;
+                break;
+            }
+        }
+
+        p.getInventory().setContents(stacks);
+        p.updateInventory();
+        return amount - total;
     }
 }
