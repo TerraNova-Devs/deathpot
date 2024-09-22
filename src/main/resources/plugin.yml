@@ -1,11 +1,8 @@
-name: TestPlugin
+name: DeathPot
 version: '1.0-SNAPSHOT'
 main: de.mcterranova.deathpot.DeathPot
 api-version: '1.21'
 commands:
-  heal:
-    description: Player Command without Arguments
   test:
-    description: Player Command with Arguments
-  test2:
-    description: Consol Command
+    description: Test command
+

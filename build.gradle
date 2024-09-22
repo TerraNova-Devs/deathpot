@@ -38,6 +38,7 @@ dependencies {
     implementation 'com.jeff-media:MorePersistentDataTypes:2.4.0'
     implementation 'de.mcterranova:terranova-lib:0.5.0'
 }
+
 shadowJar{
     destinationDirectory.set(file("./testserver/plugins"))
     relocate 'com.jeff_media.customblockdata', 'org.example.testPlugin.libs.customblockdata'
@@ -52,6 +53,8 @@ java {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
 }
+
+tasks.named("build") { dependsOn(tasks.named("shadowJar")) }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
