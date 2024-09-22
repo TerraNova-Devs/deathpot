@@ -12,10 +12,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,5 +56,16 @@ public class DeathPotListener implements Listener {
         pot.getPersistentDataContainer().remove(key);
         pot.update();
         pot.getBlock().setType(Material.AIR);
+    }
+
+    @EventHandler
+    public void onBreak(BlockBreakEvent event){
+        Player p = event.getPlayer();
+        if (!(event.getBlock().getState() instanceof DecoratedPot pot)){
+            return;
+        }
+        if (pot.getPersistentDataContainer().has(key)){
+            event.setCancelled(true);
+        };
     }
 }
