@@ -5,16 +5,12 @@ import de.mcterranova.deathpot.DeathPot;
 import de.mcterranova.deathpot.datatypes.InstantDataType;
 import de.mcterranova.terranovaLib.roseGUI.RoseItem;
 import de.mcterranova.terranovaLib.utils.Chat;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.DecoratedPot;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,24 +18,23 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Objects;
-import java.util.UUID;
 
 public class DeathPotListener implements Listener {
 
-    private final NamespacedKey key;
+    private final NamespacedKey itemKey;
+    private final NamespacedKey userKey;
+    private final NamespacedKey timeKey;
 
     public DeathPotListener(DeathPot plugin) {
-        this.key = new NamespacedKey(plugin, "deathPot");
+        this.itemKey = new NamespacedKey(plugin, "itemKeyDeathPot");
+        this.userKey = new NamespacedKey(plugin, "userKeyDeathPot");
+        this.timeKey = new NamespacedKey(plugin, "timeKeyDeathPot");
     }
 
     @EventHandler
@@ -48,9 +43,11 @@ public class DeathPotListener implements Listener {
         Block block = p.getLocation().add(0,0.5,0).getBlock();
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
-        pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
-        pot.getPersistentDataContainer().set(key, DataType.UUID, p.getUniqueId());
-        pot.getPersistentDataContainer().set(key, new InstantDataType(), Instant.now());
+        pot.getPersistentDataContainer().set(itemKey, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
+        pot.getPersistentDataContainer().set(userKey, DataType.UUID, p.getUniqueId());
+        pot.getPersistentDataContainer().set(timeKey, new InstantDataType(), Instant.now());
+        Instant test = pot.getPersistentDataContainer().get(timeKey, new InstantDataType());
+        p.sendMessage(test.toString());
         pot.update();
         p.getInventory().clear();
         event.getPlayer();
@@ -76,13 +73,13 @@ public class DeathPotListener implements Listener {
         Player p = event.getPlayer();
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
         if (!(Objects.requireNonNull(event.getClickedBlock()).getState() instanceof DecoratedPot pot)) return;
-        if (!pot.getPersistentDataContainer().has(key)) return;
-        ItemStack[] deathDrop = pot.getPersistentDataContainer().get(key, DataType.ITEM_STACK_ARRAY);
+        if (!pot.getPersistentDataContainer().has(itemKey)) return;
+        ItemStack[] deathDrop = pot.getPersistentDataContainer().get(itemKey, DataType.ITEM_STACK_ARRAY);
         if (deathDrop == null) return;
         Arrays.stream(deathDrop)
                 .filter(Objects::nonNull)
                 .forEach(itemStack -> p.getWorld().dropItem(p.getLocation(), itemStack));
-        pot.getPersistentDataContainer().remove(key);
+        pot.getPersistentDataContainer().remove(itemKey);
         pot.update();
         pot.getBlock().setType(Material.AIR);
         p.sendMessage(MiniMessage.miniMessage().stripTags(prettyLocation(event.getClickedBlock().getLocation())));
@@ -91,13 +88,9 @@ public class DeathPotListener implements Listener {
 
     @EventHandler
     public void onBreak(BlockBreakEvent event){
-        Player p = event.getPlayer();
-        if (!(event.getBlock().getState() instanceof DecoratedPot pot)){
-            return;
-        }
-        if (pot.getPersistentDataContainer().has(key)){
-            event.setCancelled(true);
-        };
+        if (!(event.getBlock().getState() instanceof DecoratedPot pot)) return;
+        if (pot.getPersistentDataContainer().has(itemKey)) event.setCancelled(true);
+
     }
     private Integer chargeStrict(Player p, String itemString, int amount, Location loc) {
 
