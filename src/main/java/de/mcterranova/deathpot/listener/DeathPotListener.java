@@ -30,6 +30,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.UUID;
 
 public class DeathPotListener implements Listener {
 
@@ -46,6 +47,8 @@ public class DeathPotListener implements Listener {
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
         pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
+        pot.getPersistentDataContainer().set(key, DataType.UUID, p.getUniqueId());
+        pot.getPersistentDataContainer().set(key, DataType.);
         pot.update();
         p.getInventory().clear();
         event.getPlayer();
@@ -53,7 +56,7 @@ public class DeathPotListener implements Listener {
                 .material(Material.COMPASS)
                 .displayName(Chat.cottonCandy(p.getName()))
                 .addLore(prettyLocation(block.getLocation()),
-                        "<red>Todesart: <gray>" + event.getEntity().getLastDamageCause()).build().stack;
+                        "<red>User: <gray>" + p.getName()).build().stack;
         item.getItemMeta();
         CompassMeta meta = (CompassMeta) item.getItemMeta();
         meta.setLodestoneTracked(false);
@@ -65,6 +68,7 @@ public class DeathPotListener implements Listener {
     private String prettyLocation(Location loc) {
         return "<red>Koordinaten: <gray>" + (int) loc.x() + ", " + (int) loc.y() + ", " + (int) loc.z();
     }
+    java.time.Instant
 
     @EventHandler
     public void onOpen(PlayerInteractEvent event) {
@@ -121,4 +125,5 @@ public class DeathPotListener implements Listener {
         p.updateInventory();
         return amount - total;
     }
+
 }
