@@ -2,6 +2,7 @@ package de.mcterranova.deathpot.listener;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
 import de.mcterranova.deathpot.DeathPot;
+import de.mcterranova.deathpot.datatypes.InstantDataType;
 import de.mcterranova.terranovaLib.roseGUI.RoseItem;
 import de.mcterranova.terranovaLib.utils.Chat;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -27,6 +28,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
@@ -48,7 +50,7 @@ public class DeathPotListener implements Listener {
         DecoratedPot pot = (DecoratedPot) block.getState();
         pot.getPersistentDataContainer().set(key, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
         pot.getPersistentDataContainer().set(key, DataType.UUID, p.getUniqueId());
-        pot.getPersistentDataContainer().set(key, DataType.);
+        pot.getPersistentDataContainer().set(key, new InstantDataType(), Instant.now());
         pot.update();
         p.getInventory().clear();
         event.getPlayer();
@@ -68,7 +70,6 @@ public class DeathPotListener implements Listener {
     private String prettyLocation(Location loc) {
         return "<red>Koordinaten: <gray>" + (int) loc.x() + ", " + (int) loc.y() + ", " + (int) loc.z();
     }
-    java.time.Instant
 
     @EventHandler
     public void onOpen(PlayerInteractEvent event) {
