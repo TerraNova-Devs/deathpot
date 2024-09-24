@@ -2,9 +2,9 @@ package de.mcterranova.deathpot.listener;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
 import de.mcterranova.deathpot.DeathPot;
-import de.mcterranova.deathpot.datatypes.InstantDataType;
 import de.mcterranova.terranovaLib.roseGUI.RoseItem;
 import de.mcterranova.terranovaLib.utils.Chat;
+import de.mcterranova.terranovaLib.violetPDC.violetDataType;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -44,23 +44,16 @@ public class DeathPotListener implements Listener {
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
         pot.getPersistentDataContainer().set(itemKey, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
-        pot.getPersistentDataContainer().set(userKey, DataType.UUID, p.getUniqueId());
-        pot.getPersistentDataContainer().set(timeKey, new InstantDataType(), Instant.now());
-        Instant test = pot.getPersistentDataContainer().get(timeKey, new InstantDataType());
-        p.sendMessage(test.toString());
+        pot.getPersistentDataContainer().set(userKey, violetDataType.UUID, p.getUniqueId());
+        pot.getPersistentDataContainer().set(timeKey, violetDataType.Instant, Instant.now());
         pot.update();
         p.getInventory().clear();
         event.getPlayer();
         ItemStack item = new RoseItem.Builder()
-                .material(Material.COMPASS)
+                .setCompass(p.getLocation())
                 .displayName(Chat.cottonCandy(p.getName()))
                 .addLore(prettyLocation(block.getLocation()),
                         "<red>User: <gray>" + p.getName()).build().stack;
-        item.getItemMeta();
-        CompassMeta meta = (CompassMeta) item.getItemMeta();
-        meta.setLodestoneTracked(false);
-        meta.setLodestone(p.getLocation());
-        item.setItemMeta(meta);
         p.getInventory().addItem(item);
     }
 
