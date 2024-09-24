@@ -35,7 +35,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
     implementation 'com.jeff-media:MorePersistentDataTypes:2.4.0'
-    implementation 'de.mcterranova:terranova-lib:0.6.4'
+    implementation 'de.mcterranova:terranova-lib:0.6.6'
     implementation fileTree(dir: 'jars', include: ['*.jar'])
 }
 

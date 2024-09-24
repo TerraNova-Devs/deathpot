@@ -11,7 +11,7 @@ public final class DeathPot extends JavaPlugin {
 
     @Override
     public void onEnable (){
-        Objects.requireNonNull(getCommand("test")).setExecutor(new TestCommand());
+        Objects.requireNonNull(getCommand("test")).setExecutor(new TestCommand(this));
         Bukkit.getPluginManager().registerEvents(new DeathPotListener(this), this);
     }
 

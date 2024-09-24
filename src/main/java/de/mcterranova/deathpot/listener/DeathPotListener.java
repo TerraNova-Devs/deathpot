@@ -26,17 +26,23 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Stack;
+import java.util.UUID;
 
 public class DeathPotListener implements Listener {
 
     private final NamespacedKey itemKey;
     private final NamespacedKey userKey;
     private final NamespacedKey timeKey;
+    private final NamespacedKey uuidKey;
+    private final DeathPot plugin;
 
     public DeathPotListener(DeathPot plugin) {
-        this.itemKey = new NamespacedKey(plugin, "itemKeyDeathPot");
-        this.userKey = new NamespacedKey(plugin, "userKeyDeathPot");
-        this.timeKey = new NamespacedKey(plugin, "timeKeyDeathPot");
+        this.itemKey = new NamespacedKey(plugin, "itemKey");
+        this.userKey = new NamespacedKey(plugin, "userKey");
+        this.timeKey = new NamespacedKey(plugin, "timeKey");
+        this.uuidKey = new NamespacedKey(plugin, "uuidKey");
+        this.plugin = plugin;
     }
 
     @EventHandler
@@ -46,19 +52,22 @@ public class DeathPotListener implements Listener {
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
 
-        Instant now = Instant.now();
-        pot.getPersistentDataContainer().set(itemKey, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
-        pot.getPersistentDataContainer().set(userKey, violetDataType.UUID, p.getUniqueId());
-        pot.getPersistentDataContainer().set(timeKey, violetDataType.Instant, now);
-        pot.update();
-        p.getInventory().clear();
-        event.getPlayer();
-        ItemStack item = new RoseItem.Builder()
+        Instant time = Instant.now();
+        RoseItem item = new RoseItem.Builder()
                 .setCompass(p.getLocation())
                 .displayName(Chat.cottonCandy(p.getName()))
                 .addLore("<red>Koordinaten: <gray>" + Chat.prettyLocation(block.getLocation()),
-                        "<red>Todeszeitpunkt: <gray>" + Chat.prettyInstant(now)).build().stack;
-        p.getInventory().addItem(item);
+                        "<red>Todeszeitpunkt: <gray>" + Chat.prettyInstant(time))
+                .generateUUID(plugin).build();
+        pot.getPersistentDataContainer().set(itemKey, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
+        pot.getPersistentDataContainer().set(userKey, violetDataType.UUID, p.getUniqueId());
+        pot.getPersistentDataContainer().set(timeKey, violetDataType.Instant, time);
+        pot.getPersistentDataContainer().set(uuidKey, violetDataType.UUID, item.getUUID());
+
+        pot.update();
+        p.getInventory().clear();
+
+        p.getInventory().addItem(item.stack);
     }
 
     @EventHandler
@@ -66,25 +75,30 @@ public class DeathPotListener implements Listener {
         Player p = event.getPlayer();
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
         if (!(Objects.requireNonNull(event.getClickedBlock()).getState() instanceof DecoratedPot pot)) return;
+        //if (!pot.getPersistentDataContainer().has(timeKey) == timeKey.equals(0) || !pot.getPersistentDataContainer().has(userKey) == p.getUniqueId())
         if (!pot.getPersistentDataContainer().has(itemKey)) return;
         ItemStack[] deathDrop = pot.getPersistentDataContainer().get(itemKey, DataType.ITEM_STACK_ARRAY);
         if (deathDrop == null) return;
         Arrays.stream(deathDrop)
                 .filter(Objects::nonNull)
                 .forEach(itemStack -> p.getWorld().dropItem(p.getLocation(), itemStack));
+        chargeStrict(p,"COMPASS",1,event.getClickedBlock().getLocation(),pot.getPersistentDataContainer().get(uuidKey, violetDataType.UUID));
         pot.getPersistentDataContainer().remove(itemKey);
+        pot.getPersistentDataContainer().remove(uuidKey);
+        pot.getPersistentDataContainer().remove(userKey);
+        pot.getPersistentDataContainer().remove(timeKey);
         pot.update();
         pot.getBlock().setType(Material.AIR);
-        chargeStrict(p,"COMPASS",1,event.getClickedBlock().getLocation());
+
     }
 
     @EventHandler
-    public void onBreak(BlockBreakEvent event){
+    public void onBreak(BlockBreakEvent event, Player p){
         if (!(event.getBlock().getState() instanceof DecoratedPot pot)) return;
         if (pot.getPersistentDataContainer().has(itemKey)) event.setCancelled(true);
 
     }
-    private Integer chargeStrict(Player p, String itemString, int amount, Location loc) {
+    private Integer chargeStrict(Player p, String itemString, int amount, Location loc, UUID uuid) {
 
         ItemStack item = new ItemStack(Material.valueOf(itemString));
 
@@ -92,7 +106,12 @@ public class DeathPotListener implements Listener {
 
         int total = amount;
         for (int i = 0; i < stacks.length; i++) {
-            if (!MiniMessage.miniMessage().stripTags(MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst())).equals(MiniMessage.miniMessage().stripTags(Chat.prettyLocation(loc)))) continue;
+            if (stacks[i] == null || !stacks[i].getType().equals(Material.COMPASS)) continue;
+            UUID itemUUID = stacks[i].getItemMeta().getPersistentDataContainer().get(uuidKey, violetDataType.UUID);
+            if (itemUUID == null)p.sendMessage("1");
+            if (!itemUUID.equals(uuid))p.sendMessage("2");
+            //if (itemUUID == null || !itemUUID.equals(uuid)) continue;
+
 
             int stackAmount = stacks[i].getAmount();
             if (stackAmount < total) {
