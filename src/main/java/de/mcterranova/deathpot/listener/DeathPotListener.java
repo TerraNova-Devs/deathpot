@@ -35,6 +35,7 @@ public class DeathPotListener implements Listener {
     private final NamespacedKey userKey;
     private final NamespacedKey timeKey;
     private final NamespacedKey uuidKey;
+    private final NamespacedKey cuuidKey;
     private final DeathPot plugin;
 
     public DeathPotListener(DeathPot plugin) {
@@ -42,6 +43,7 @@ public class DeathPotListener implements Listener {
         this.userKey = new NamespacedKey(plugin, "userKey");
         this.timeKey = new NamespacedKey(plugin, "timeKey");
         this.uuidKey = new NamespacedKey(plugin, "uuidKey");
+        this.cuuidKey = new NamespacedKey(plugin, "uuid");
         this.plugin = plugin;
     }
 
@@ -107,10 +109,8 @@ public class DeathPotListener implements Listener {
         int total = amount;
         for (int i = 0; i < stacks.length; i++) {
             if (stacks[i] == null || !stacks[i].getType().equals(Material.COMPASS)) continue;
-            UUID itemUUID = stacks[i].getItemMeta().getPersistentDataContainer().get(uuidKey, violetDataType.UUID);
-            if (itemUUID == null)p.sendMessage("1");
-            if (!itemUUID.equals(uuid))p.sendMessage("2");
-            //if (itemUUID == null || !itemUUID.equals(uuid)) continue;
+            UUID itemUUID = stacks[i].getItemMeta().getPersistentDataContainer().get(cuuidKey, violetDataType.UUID);
+            if (itemUUID == null || !itemUUID.equals(uuid)) continue;
 
 
             int stackAmount = stacks[i].getAmount();
