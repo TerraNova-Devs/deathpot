@@ -22,6 +22,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -43,22 +45,20 @@ public class DeathPotListener implements Listener {
         Block block = p.getLocation().add(0,0.5,0).getBlock();
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
+
+        Instant now = Instant.now();
         pot.getPersistentDataContainer().set(itemKey, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
         pot.getPersistentDataContainer().set(userKey, violetDataType.UUID, p.getUniqueId());
-        pot.getPersistentDataContainer().set(timeKey, violetDataType.Instant, Instant.now());
+        pot.getPersistentDataContainer().set(timeKey, violetDataType.Instant, now);
         pot.update();
         p.getInventory().clear();
         event.getPlayer();
         ItemStack item = new RoseItem.Builder()
                 .setCompass(p.getLocation())
                 .displayName(Chat.cottonCandy(p.getName()))
-                .addLore(prettyLocation(block.getLocation()),
-                        "<red>User: <gray>" + p.getName()).build().stack;
+                .addLore("<red>Koordinaten: <gray>" + Chat.prettyLocation(block.getLocation()),
+                        "<red>Todeszeitpunkt: <gray>" + Chat.prettyInstant(now)).build().stack;
         p.getInventory().addItem(item);
-    }
-
-    private String prettyLocation(Location loc) {
-        return "<red>Koordinaten: <gray>" + (int) loc.x() + ", " + (int) loc.y() + ", " + (int) loc.z();
     }
 
     @EventHandler
@@ -75,7 +75,6 @@ public class DeathPotListener implements Listener {
         pot.getPersistentDataContainer().remove(itemKey);
         pot.update();
         pot.getBlock().setType(Material.AIR);
-        p.sendMessage(MiniMessage.miniMessage().stripTags(prettyLocation(event.getClickedBlock().getLocation())));
         chargeStrict(p,"COMPASS",1,event.getClickedBlock().getLocation());
     }
 
@@ -93,9 +92,7 @@ public class DeathPotListener implements Listener {
 
         int total = amount;
         for (int i = 0; i < stacks.length; i++) {
-            //if (stacks[i] == null || !stacks[i].isSimilar(item)) continue;
-            p.sendMessage(MiniMessage.miniMessage().stripTags(MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst())));
-            if (!MiniMessage.miniMessage().stripTags(MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst())).equals(MiniMessage.miniMessage().stripTags(prettyLocation(loc)))) continue;
+            if (!MiniMessage.miniMessage().stripTags(MiniMessage.miniMessage().serialize(Objects.requireNonNull(stacks[i].getItemMeta().lore()).getFirst())).equals(MiniMessage.miniMessage().stripTags(Chat.prettyLocation(loc)))) continue;
 
             int stackAmount = stacks[i].getAmount();
             if (stackAmount < total) {
