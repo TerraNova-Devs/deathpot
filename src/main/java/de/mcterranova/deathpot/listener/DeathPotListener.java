@@ -21,6 +21,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -37,6 +38,7 @@ public class DeathPotListener implements Listener {
     private final NamespacedKey uuidKey;
     private final NamespacedKey cuuidKey;
     private final DeathPot plugin;
+    private final int time = 60*60;
 
     public DeathPotListener(DeathPot plugin) {
         this.itemKey = new NamespacedKey(plugin, "itemKey");
@@ -78,7 +80,14 @@ public class DeathPotListener implements Listener {
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
         if (!(Objects.requireNonNull(event.getClickedBlock()).getState() instanceof DecoratedPot pot)) return;
         //if (!pot.getPersistentDataContainer().has(timeKey) == timeKey.equals(0) || !pot.getPersistentDataContainer().has(userKey) == p.getUniqueId())
-        if (!pot.getPersistentDataContainer().has(itemKey)) return;
+        if (!pot.getPersistentDataContainer().has(uuidKey)) return;
+        Instant deathTime = pot.getPersistentDataContainer().get(timeKey, violetDataType.Instant);
+        UUID potUUID = pot.getPersistentDataContainer().get(userKey, violetDataType.UUID);
+        long dur = Duration.between(deathTime,Instant.now()).getSeconds();
+        if (!p.getUniqueId().equals(potUUID) && dur < time){
+            p.sendMessage(Chat.errorFade("Zeit bis TodesPot offen ist " + (time-dur)));
+            return;
+        }
         ItemStack[] deathDrop = pot.getPersistentDataContainer().get(itemKey, DataType.ITEM_STACK_ARRAY);
         if (deathDrop == null) return;
         Arrays.stream(deathDrop)
