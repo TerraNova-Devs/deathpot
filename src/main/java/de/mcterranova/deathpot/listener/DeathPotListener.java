@@ -4,8 +4,6 @@ import com.jeff_media.morepersistentdatatypes.DataType;
 import de.mcterranova.deathpot.DeathPot;
 import de.mcterranova.terranovaLib.roseGUI.RoseItem;
 import de.mcterranova.terranovaLib.utils.Chat;
-import de.mcterranova.terranovaLib.violetPDC.violetDataType;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -19,15 +17,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.CompassMeta;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Stack;
 import java.util.UUID;
 
 public class DeathPotListener implements Listener {
@@ -38,7 +32,7 @@ public class DeathPotListener implements Listener {
     private final NamespacedKey uuidKey;
     private final NamespacedKey cuuidKey;
     private final DeathPot plugin;
-    private final int time = 60*60;
+    private final int time = 60 * 60;
 
     public DeathPotListener(DeathPot plugin) {
         this.itemKey = new NamespacedKey(plugin, "itemKey");
@@ -52,21 +46,17 @@ public class DeathPotListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         Player p = event.getEntity();
-        Block block = p.getLocation().add(0,0.5,0).getBlock();
+        Block block = p.getLocation().add(0, 0.5, 0).getBlock();
         block.setType(Material.DECORATED_POT);
         DecoratedPot pot = (DecoratedPot) block.getState();
 
         Instant time = Instant.now();
-        RoseItem item = new RoseItem.Builder()
-                .setCompass(p.getLocation())
-                .displayName(Chat.cottonCandy(p.getName()))
-                .addLore("<red>Koordinaten: <gray>" + Chat.prettyLocation(block.getLocation()),
-                        "<red>Todeszeitpunkt: <gray>" + Chat.prettyInstant(time))
-                .generateUUID(plugin).build();
+        RoseItem item = new RoseItem.Builder().setCompass(p.getLocation()).displayName(Chat.cottonCandy(p.getName())).addLore("<red>Koordinaten: <gray>" + Chat.prettyLocation(block.getLocation()), "<red>Todeszeitpunkt: <gray>" + Chat.prettyInstant(time)).generateUUID(plugin).build();
         pot.getPersistentDataContainer().set(itemKey, DataType.ITEM_STACK_ARRAY, p.getInventory().getContents());
-        pot.getPersistentDataContainer().set(userKey, violetDataType.UUID, p.getUniqueId());
-        pot.getPersistentDataContainer().set(timeKey, violetDataType.Instant, time);
-        pot.getPersistentDataContainer().set(uuidKey, violetDataType.UUID, item.getUUID());
+        pot.getPersistentDataContainer().set(userKey, de.mcterranova.terranovaLib.persistentData.terraDataType.UUID, p.getUniqueId());
+
+        pot.getPersistentDataContainer().set(timeKey, de.mcterranova.terranovaLib.persistentData.terraDataType.Instant, time);
+        pot.getPersistentDataContainer().set(uuidKey, de.mcterranova.terranovaLib.persistentData.terraDataType.UUID, item.getUUID());
 
         pot.update();
         p.getInventory().clear();
@@ -81,34 +71,32 @@ public class DeathPotListener implements Listener {
         if (!(Objects.requireNonNull(event.getClickedBlock()).getState() instanceof DecoratedPot pot)) return;
         //if (!pot.getPersistentDataContainer().has(timeKey) == timeKey.equals(0) || !pot.getPersistentDataContainer().has(userKey) == p.getUniqueId())
         if (!pot.getPersistentDataContainer().has(uuidKey)) return;
-        Instant deathTime = pot.getPersistentDataContainer().get(timeKey, violetDataType.Instant);
-        UUID potUUID = pot.getPersistentDataContainer().get(userKey, violetDataType.UUID);
-        long dur = Duration.between(deathTime,Instant.now()).getSeconds();
-        if (!p.getUniqueId().equals(potUUID) && dur < time){
-            p.sendMessage(Chat.errorFade("Zeit bis TodesPot offen ist " + (time-dur)));
+        Instant deathTime = pot.getPersistentDataContainer().get(timeKey, de.mcterranova.terranovaLib.persistentData.terraDataType.Instant);
+        UUID potUUID = pot.getPersistentDataContainer().get(userKey, de.mcterranova.terranovaLib.persistentData.terraDataType.UUID);
+        long dur = Duration.between(deathTime, Instant.now()).getSeconds();
+        if (!p.getUniqueId().equals(potUUID) && dur < time) {
+            p.sendMessage(Chat.errorFade("Zeit bis TodesPot offen ist " + (time - dur)));
             return;
         }
         ItemStack[] deathDrop = pot.getPersistentDataContainer().get(itemKey, DataType.ITEM_STACK_ARRAY);
         if (deathDrop == null) return;
-        Arrays.stream(deathDrop)
-                .filter(Objects::nonNull)
-                .forEach(itemStack -> p.getWorld().dropItem(p.getLocation(), itemStack));
-        chargeStrict(p,"COMPASS",1,event.getClickedBlock().getLocation(),pot.getPersistentDataContainer().get(uuidKey, violetDataType.UUID));
+        Arrays.stream(deathDrop).filter(Objects::nonNull).forEach(itemStack -> p.getWorld().dropItem(p.getLocation(), itemStack));
+        chargeStrict(p, "COMPASS", 1, event.getClickedBlock().getLocation(), pot.getPersistentDataContainer().get(uuidKey, de.mcterranova.terranovaLib.persistentData.terraDataType.UUID));
         pot.getPersistentDataContainer().remove(itemKey);
         pot.getPersistentDataContainer().remove(uuidKey);
         pot.getPersistentDataContainer().remove(userKey);
         pot.getPersistentDataContainer().remove(timeKey);
         pot.update();
         pot.getBlock().setType(Material.AIR);
-
     }
 
     @EventHandler
-    public void onBreak(BlockBreakEvent event, Player p){
+    public void onBreak(BlockBreakEvent event, Player p) {
         if (!(event.getBlock().getState() instanceof DecoratedPot pot)) return;
         if (pot.getPersistentDataContainer().has(itemKey)) event.setCancelled(true);
 
     }
+
     private Integer chargeStrict(Player p, String itemString, int amount, Location loc, UUID uuid) {
 
         ItemStack item = new ItemStack(Material.valueOf(itemString));
@@ -118,7 +106,7 @@ public class DeathPotListener implements Listener {
         int total = amount;
         for (int i = 0; i < stacks.length; i++) {
             if (stacks[i] == null || !stacks[i].getType().equals(Material.COMPASS)) continue;
-            UUID itemUUID = stacks[i].getItemMeta().getPersistentDataContainer().get(cuuidKey, violetDataType.UUID);
+            UUID itemUUID = stacks[i].getItemMeta().getPersistentDataContainer().get(cuuidKey, de.mcterranova.terranovaLib.persistentData.terraDataType.UUID);
             if (itemUUID == null || !itemUUID.equals(uuid)) continue;
 
 
